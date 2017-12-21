@@ -25,5 +25,10 @@
       <index>1</index>
       <description><![CDATA[Input label]]></description>
     </image>
+    <string>
+      <name>path</name>
+      <label>Saving path</label>
+      <description><![CDATA[Path]]></description>
+     </string>
   </parameters>
 </executable>

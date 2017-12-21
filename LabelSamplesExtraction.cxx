@@ -22,6 +22,9 @@
 #include <itkLabelStatisticsImageFilter.h>
 #include <itkImageRegionIterator.h>
 
+#include <iostream>
+#include <fstream>
+
 // Use an anonymous namespace to keep class types and function names
 // from colliding when module is used as shared object module.  Every
 // thing should be in an anonymous namespace except for the module
@@ -56,43 +59,49 @@ int DoIt( int argc, char * argv[], T )
 
     readerLabel->Update();
 
-    // Filters label for image values of 0
+    // Creates iterators
     typedef itk::ImageRegionIterator<ImageType> ImageIteratorType;
     typedef itk::ImageRegionIterator<LabelType> LabelIteratorType;
 
     ImageIteratorType imgIt(readerImage->GetOutput(), readerImage->GetOutput()->GetRequestedRegion());
     LabelIteratorType lblIt(readerLabel->GetOutput(), readerLabel->GetOutput()->GetRequestedRegion());
 
+    // Gets number of labels and values of each label
+    std::vector< int > labelValues;
+    int labelCount = 0;
     lblIt.GoToBegin();
     while(!lblIt.IsAtEnd()){
         imgIt.SetIndex(lblIt.GetIndex());
-        if(lblIt.Get()>0 && imgIt.Get()==0)
-            lblIt.Set(0);
+        if(lblIt.Get()>0){
+            bool alreadyCounted = false;
+            for(int i=0; i<labelCount; i++)
+                if(lblIt.Get() == labelValues[i]){
+                    alreadyCounted = true;
+                    break;
+                }
+            if(!alreadyCounted){
+                labelValues.push_back(lblIt.Get());
+                ++labelCount;
+            }
+        }
         ++lblIt;
     }
 
-    // Computes the mean and variance for labels
-    typedef itk::LabelStatisticsImageFilter<ImageType, LabelType> StatisticsFilterType;
-    typename StatisticsFilterType::Pointer statistics = StatisticsFilterType::New();
+    // Creates files
+    std::ofstream fileArray[labelCount];
+    for(int i=0; i<labelCount; i++){
+        std::stringstream str;
+        str << path << "/label" << labelValues[i] << ".txt";
+        fileArray[i].open(str.str().c_str());
+    }
 
-    statistics->SetInput(readerImage->GetOutput());
-    statistics->SetLabelInput(readerLabel->GetOutput());
-    statistics->Update();
-
-    typedef typename StatisticsFilterType::ValidLabelValuesContainerType ValidLabelValuesType;
-    typedef typename StatisticsFilterType::LabelPixelType                LabelPixelType;
-
-    for(typename ValidLabelValuesType::const_iterator vIt = statistics->GetValidLabelValues().begin();
-        vIt != statistics->GetValidLabelValues().end();
-        ++vIt){
-        LabelPixelType labelValue = *vIt;
-        int i = (int) labelValue;
-        double mean = statistics->GetMean(i);
-        double var = statistics->GetVariance(i);
-        double std = statistics->GetSigma(i);
-        double max = statistics->GetMaximum(i);
-        double min = statistics->GetMinimum(i);
-        std::cout<<i<<" "<<mean<<" "<<var<<" "<<std<<" "<<max<<" "<<min<<std::endl;
+    lblIt.GoToBegin();
+    while(!lblIt.IsAtEnd()){
+        imgIt.SetIndex(lblIt.GetIndex());
+        for(int i=0; i<labelCount; i++)
+            if(lblIt.Get()==labelValues[i] && imgIt.Get()>0)
+                fileArray[i] << (float)imgIt.Get() << std::endl;
+        ++lblIt;
     }
 
     return EXIT_SUCCESS;
