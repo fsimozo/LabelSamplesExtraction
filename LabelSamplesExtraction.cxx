@@ -99,7 +99,8 @@ int DoIt( int argc, char * argv[], T )
     while(!lblIt.IsAtEnd()){
         imgIt.SetIndex(lblIt.GetIndex());
         for(int i=0; i<labelCount; i++)
-            if(lblIt.Get()==labelValues[i] && imgIt.Get()>0)
+            //if(lblIt.Get()==labelValues[i] && imgIt.Get()>0)
+            if(lblIt.Get()==labelValues[i])
                 fileArray[i] << (float)imgIt.Get() << std::endl;
         ++lblIt;
     }
