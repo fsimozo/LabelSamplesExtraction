@@ -26,9 +26,9 @@
       <description><![CDATA[Input label]]></description>
     </image>
     <string>
-      <name>path</name>
-      <label>Saving path</label>
-      <description><![CDATA[Path]]></description>
+      <name>prefix</name>
+      <label>Saving prefix</label>
+      <description><![CDATA[Prefix]]></description>
      </string>
   </parameters>
 </executable>

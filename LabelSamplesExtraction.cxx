@@ -91,7 +91,7 @@ int DoIt( int argc, char * argv[], T )
     std::ofstream fileArray[labelCount];
     for(int i=0; i<labelCount; i++){
         std::stringstream str;
-        str << path << "/label" << labelValues[i] << ".txt";
+        str << prefix << "_label" << labelValues[i] << ".txt";
         fileArray[i].open(str.str().c_str());
     }
 
